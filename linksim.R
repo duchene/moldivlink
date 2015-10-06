@@ -5,10 +5,10 @@ require(Matrix)
 
 # The following function simulates phylogenetic structures (not yet of class phylo) according to the relationsips between a trait and diversification rate and the same trait and the probability of a substitution occurring.
 
-# Arguments:	stepsize is the size of each time step in time (it influences the probability of an event of speciation, exinction, or substitution occurring).	branchstop is number of branches desired and stops the simulation. 	seqlen is the length of the genetic sequence to be generated.	traitstart is the initial value of the trait.			trait.r is the rate of change of the trait, which is adjusted when a trend is desired. 		FUNspr and FUNmu are the functions that define the relationship between the trait and the probability of bifurcation and substitution respectively.	Pext is the constant background probability of extinction.	D is the variance of trait evolution, which is taken as being constant.	molerror and sprerror are the error to be introduced to each of speciation and mutation probability at each step.
+# Arguments:	stepsize is the size of each time step in time (it influences the probability of an event of speciation, exinction, or substitution occurring).	branchstop is number of branches desired and stops the simulation. 	seqlen is the length of the genetic sequence to be generated.	traitstart is the initial value of the trait.			rt is the rate of change of the trait, which is adjusted when a trend is desired. 		FUNspr and FUNmu are the functions that define the relationship between the trait and the probability of bifurcation and substitution respectively.	Pext is the constant background probability of extinction.	D is the variance of trait evolution, which is taken as being constant.	molerror and sprerror are the error to be introduced to each of speciation and mutation probability at each step.
 
 
-tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstart = 50, trait.r = 0, regcoefmu = 0.7, regcoefspr = 3.15, Pext = 0.01, D = 1, molerror = 0.000001, sprerror = 0.05, direct = F, covariance = 25e-6, meanmu = -6, meanspr = -2.3, q = 0, age = 0){
+tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstart = 50, rt = 0, regcoefmu = 0.7, regcoefspr = 3.15, Pext = 0.01, D = 1, molerror = 0.000001, sprerror = 0.05, direct = F, covariance = 25e-6, meanmu = -6, meanspr = -2.3, q = 0, age = 0){
 
 # The following is a matrix where the columns are: the parent node, the daughter node, the branch length in time, and etiher the trait value or the means for mu and spr.
 
@@ -55,7 +55,11 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 	 	    # Here we are setting constant time step size. Otherwise, use rexp().
 
 		    dt <- stepsize
-        	rt <- trait.r * dt
+        	rt <- rt * dt
+		if(direct){ 
+			    rt1 <- meanmu * rt
+			    rt2 <- meanspr * rt
+		}
 
         	# The following restarts the simulation if the age of the tree exceeds 500.
         	time <- time + dt
@@ -134,7 +138,9 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 		    			spr.new <- exp(rand[2])
 
 		    			mu.new <- exp(rand[1])
-		    			
+
+					infotab <- rbind(infotab, c(time, mu.new, spr.new, edgetable[i,4]))		 
+
 		    			#print(c(spr.new, mu.new))
 
 		    		}
@@ -246,9 +252,9 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 
 						   	} else {
 
-						   		newbr1 <- c(edgetable[i, 2], (max(edgetable[, 2]) + 1), dt, mu.new, spr.new)
+						   		newbr1 <- c(edgetable[i, 2], (max(edgetable[, 2]) + 1), dt, log(mu.new) + (rexp(1) * rt1), log(spr.new) + (rexp(1) * rt2))
 
-						   		newbr2 <- c(edgetable[i, 2], (max(edgetable[, 2]) + 2), dt, mu.new, spr.new)
+						   		newbr2 <- c(edgetable[i, 2], (max(edgetable[, 2]) + 2), dt, log(mu.new) + (rexp(1) * rt1), log(spr.new) + (rexp(1) * rt2))
 
 						   	}
 
@@ -275,9 +281,9 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 
 							} else {
 
-								edgetable[i, 4] <- mu.new
+								edgetable[i, 4] <- log(mu.new) + (rexp(1) * rt1)
 
-								edgetable[i, 5] <- spr.new
+								edgetable[i, 5] <- log(spr.new) + (rexp(1) * rt2)
 
 							}
 						}
@@ -295,9 +301,9 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 
 						} else {
 
-							edgetable[i, 4] <- mu.new
+							edgetable[i, 4] <- log(mu.new) + (rexp(1) * rt1)
 
-							edgetable[i, 5] <- spr.new
+							edgetable[i, 5] <- log(spr.new) + (rexp(1) * rt1)
 
 						}
 
