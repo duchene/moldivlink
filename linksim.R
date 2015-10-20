@@ -143,7 +143,7 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 		    			
 		    		### The following is the total probability of each event occurring.
 
-	    			totalP <- ((spr.new + (mu.new * seqlen) + Pext + (spr.new * (mu.new * seqlen)))) * exp(-((spr.new + (mu.new * seqlen) + Pext + (spr.new * (mu.new * seqlen))) * dt))
+	    			totalP <- (spr.new + (mu.new * seqlen) + Pext) * exp(-((spr.new + (mu.new * seqlen) + Pext) * dt))
 	    			
 	    			#print(totalP)
 	    			
@@ -151,11 +151,11 @@ tr.mu.sp <- function(stepsize = 0.01, branchstop = 300, seqlen = 4000, traitstar
 	    			
 	    			if(runif(1) <= totalP){
 	    			
-	    				specP <- spr.new / (spr.new + (mu.new * seqlen) + Pext + (spr.new * (mu.new * seqlen)))
+	    				specP <- spr.new / (spr.new + (mu.new * seqlen) + Pext)
 		    				
-		    			extP <- Pext / (spr.new + (mu.new * seqlen) + Pext + (spr.new * (mu.new * seqlen)))
+		    			extP <- Pext / (spr.new + (mu.new * seqlen) + Pext)
 		    				
-		    			muP <- (mu.new * seqlen) / (spr.new + (mu.new * seqlen) + Pext + (spr.new * (mu.new * seqlen)))
+		    			muP <- (mu.new * seqlen) / (spr.new + (mu.new * seqlen) + Pext)
 
 		    			# The following segment determines which event occurs.
 		    				
